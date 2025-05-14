@@ -1,0 +1,17 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  packages/theme-template:
+    dependencies:
+      vue-theme:
+        specifier: workspace:*
+        version: link:../vue-theme
+
+  packages/vue-theme: {}
