@@ -1,0 +1,17 @@
+{
+  "name": "vue-liquid",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node --experimental-strip-types --experimental-modules build.ts",
+    "dev": "node --experimental-strip-types --experimental-modules dev.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.7.0",
+  "dependencies": {
+    "@types/node": "^22.15.18"
+  }
+}
