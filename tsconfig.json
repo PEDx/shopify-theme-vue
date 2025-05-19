@@ -8,7 +8,9 @@
     "outDir": "build",
     "baseUrl": ".",
     "types": ["vite/client"],
+    "allowImportingTsExtensions": true,
     "strict": true,
+    "noEmit": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
     "skipLibCheck": true

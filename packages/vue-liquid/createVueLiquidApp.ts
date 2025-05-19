@@ -8,5 +8,5 @@ export function createVueLiquidApp(rootComponent: Component, rootProps?: Record<
     return createClientApp(rootComponent, rootProps).mount(`#${__VUE_LIQUID_APP_ID__}`);
   }
 
-  return { app: createSSRApp(rootComponent, rootProps), id: `#${__VUE_LIQUID_APP_ID__}` };
+  return createSSRApp(rootComponent, rootProps);
 }

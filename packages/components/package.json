@@ -1,10 +1,10 @@
 {
-  "name": "theme-template",
+  "name": "components",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "node  --experimental-strip-types --experimental-modules  build.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
