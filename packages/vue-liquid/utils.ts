@@ -1,4 +1,4 @@
-export function randomString(e) {
+export function randomString(e: number) {
   e = e || 32;
   var t = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678',
     a = t.length,

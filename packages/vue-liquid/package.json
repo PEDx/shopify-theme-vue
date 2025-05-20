@@ -2,16 +2,18 @@
   "name": "vue-liquid",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "build": "node --experimental-strip-types --experimental-modules build.ts",
-    "dev": "node --experimental-strip-types --experimental-modules dev.ts"
-  },
+  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./index.ts",
+
   "keywords": [],
   "author": "",
   "license": "MIT",
   "packageManager": "pnpm@10.7.0",
+  "scripts": {
+    "build": "vite build"
+  },
   "dependencies": {
-    "@types/node": "^22.15.18"
+    "rollup-plugin-node-externals": "^8.0.0"
   }
 }

@@ -3,14 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "build": "node  --experimental-strip-types --experimental-modules  build.js"
+    "build": "node ./scripts/build.js"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "packageManager": "pnpm@10.7.0",
   "dependencies": {
-    "vue-liquid": "workspace:*"
+    "vue-liquid": "workspace:*",
+    "components": "workspace:*"
   }
 }

@@ -1,2 +1,1 @@
-export * from './build';
-export * from './createVueLiquidApp';
+export { build } from './build';

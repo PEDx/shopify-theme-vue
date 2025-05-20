@@ -1,7 +1,7 @@
 import type { Component } from 'vue';
 import { createApp as createClientApp, createSSRApp } from 'vue';
 
-export function createVueLiquidApp(rootComponent: Component, rootProps?: Record<string, unknown> | null) {
+export function createApp(rootComponent: Component, rootProps?: Record<string, unknown> | null) {
   const isSSR = import.meta.env.SSR;
 
   if (!isSSR) {

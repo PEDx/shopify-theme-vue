@@ -1,22 +1,23 @@
 import { createServer } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import tailwindcss from '@tailwindcss/vite';
 import { getAppId } from './utils.js';
+import { build_plugins, OUTPUT_DIR } from './build.js';
 
-const server = await createServer({
-  root: './example/simple-app/',
-  plugins: [tailwindcss(), vue()],
-  server: {
-    port: 3000,
-    watch: {
-      ignored: ['node_modules', 'dist', 'build'],
+export const dev = async (app_dir: string) => {
+  const server = await createServer({
+    root: app_dir,
+    plugins: build_plugins,
+    server: {
+      port: 3000,
+      watch: {
+        ignored: ['node_modules', OUTPUT_DIR],
+      },
     },
-  },
-  define: {
-    __VUE_LIQUID_APP_ID__: `'${getAppId(true)}'`,
-  },
-});
+    define: {
+      __VUE_LIQUID_APP_ID__: `'${getAppId(true)}'`,
+    },
+  });
 
-await server.listen();
+  await server.listen();
 
-server.printUrls();
+  server.printUrls();
+};

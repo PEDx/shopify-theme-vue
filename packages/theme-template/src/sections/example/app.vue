@@ -6,5 +6,5 @@
 </template>
 
 <script setup>
-import { Button } from '@/components';
+import { Button } from 'components';
 </script>
