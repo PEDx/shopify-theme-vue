@@ -76,8 +76,18 @@ ${comment}
 */\n`;
 };
 
+const get_liquid_comment = (comment: string) => {
+  return `{% comment %}
+${comment}
+{% endcomment %}\n`;
+};
+
 const generate_build_banner = () => {
-  return `*  Build Date ${new Date().toLocaleString()}`;
+  return `*  build date ${new Date().toLocaleString()}`;
+};
+
+const get_app_root_tag = (appid: string, html: string) => {
+  return `<div id="${appid}" data-server-rendered="true">${html}</div>`;
 };
 
 const generate_html = ({
@@ -98,7 +108,7 @@ const generate_html = ({
     <style>${style}</style>
   </head>
   <body>
-    <div id="${appid}" data-server-rendered="true">${html}</div>
+    ${get_app_root_tag(appid, html)}
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="text/javascript">${script}</script>
   </body>
@@ -106,11 +116,20 @@ const generate_html = ({
 `;
 };
 
-const generate_liquid = ({ html, appid }: { html: string; appid: string }) => {
-  return `
-
-
-  `;
+const generate_liquid = ({
+  html,
+  appid,
+  script_name,
+  style_name,
+}: {
+  html: string;
+  appid: string;
+  script_name: string;
+  style_name: string;
+}) => {
+  return `<link href="{{ "${style_name}" | asset_url }}" rel="stylesheet" type="text/css" >
+${get_app_root_tag(appid, html)}
+<script src="{{ "${script_name}" | asset_url }}" type="text/javascript" defer fetchpriority="high"></script>`;
 };
 
 export async function build(app_dir: string, build_liquid: boolean = true) {
@@ -151,18 +170,26 @@ export async function build(app_dir: string, build_liquid: boolean = true) {
   }
 
   const app_name = basename(app_dir);
-  const build_banner = get_comment(generate_build_banner());
+  const banner = generate_build_banner();
+  const build_banner = get_comment(banner);
+  const liquid_comment = get_liquid_comment(banner);
 
-  console.log(build_banner);
+  console.log(banner);
 
   if (build_liquid) {
-    const script_file = join(output_dir, `${LIQUID_ASSETS_PREFIX}-${app_name}.js`);
-    const style_file = join(output_dir, `${LIQUID_ASSETS_PREFIX}-${app_name}.css`);
-    const liquid_file = join(output_dir, `${LIQUID_ASSETS_PREFIX}-${app_name}.liquid`);
+    const script_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.js`;
+    const style_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.css`;
+    const liquid_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.liquid`;
 
-    writeFileSync(script_file, client_script as string);
-    writeFileSync(style_file, client_style as string);
-    writeFileSync(liquid_file, generate_liquid({ html, appid }));
+    const script_file_name = join(output_dir, script_name);
+    const style_file_name = join(output_dir, style_name);
+    const liquid_file_name = join(output_dir, liquid_name);
+
+    const liquid_content = generate_liquid({ html, appid, script_name, style_name });
+
+    writeFileSync(script_file_name, build_banner.concat(client_script as string));
+    writeFileSync(style_file_name, build_banner.concat(client_style as string));
+    writeFileSync(liquid_file_name, liquid_comment.concat(liquid_content));
     return;
   }
 

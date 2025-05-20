@@ -1,19 +1,57 @@
 import { createServer } from 'vite';
 import { getAppId } from './utils.js';
-import { build_plugins, OUTPUT_DIR } from './build.js';
+import { OUTPUT_DIR } from './build.js';
+import tailwindcss from '@tailwindcss/vite';
+import vue from '@vitejs/plugin-vue';
+
+const dev_index_html = (app_id: string) => {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + Vue + TS</title>
+  </head>
+  <body>
+    <div id="${app_id}"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
+`;
+};
 
 export const dev = async (app_dir: string) => {
+  const app_id = getAppId(false);
+  const index_html = dev_index_html(app_id);
+
   const server = await createServer({
     root: app_dir,
-    plugins: build_plugins,
+    plugins: [
+      tailwindcss(),
+      vue(),
+      {
+        name: 'vue-liquid-dev',
+        configureServer(server) {
+          server.middlewares.use(async (req, res, next) => {
+            const url = req.url;
+            if (url === '/') {
+              res.end(index_html);
+              return;
+            }
+            next();
+          });
+        },
+      },
+    ],
     server: {
       port: 3000,
       watch: {
         ignored: ['node_modules', OUTPUT_DIR],
       },
+      open: false,
     },
     define: {
-      __VUE_LIQUID_APP_ID__: `'${getAppId(true)}'`,
+      __VUE_LIQUID_APP_ID__: `'${app_id}'`,
     },
   });
 
