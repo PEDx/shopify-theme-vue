@@ -1,3 +1,3 @@
 import { build } from 'vue-liquid';
 
-await build('./src/sections/example');
+await build('./src/sections/example', false);
