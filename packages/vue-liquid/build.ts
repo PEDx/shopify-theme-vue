@@ -15,12 +15,10 @@ export const OUTPUT_DIR = 'dist';
 
 export const LIQUID_ASSETS_PREFIX = 'vue';
 
-export const build_plugins = [tailwindcss(), vue()];
-
 const get_build_config = (app_dir: string, appid: string) => {
   const common_build_config = defineConfig({
     mode: 'production',
-    plugins: build_plugins,
+    plugins: [vue(), tailwindcss()],
     build: {
       cssCodeSplit: false,
       rollupOptions: {
@@ -28,8 +26,12 @@ const get_build_config = (app_dir: string, appid: string) => {
         external: ['vue'],
       },
     },
+
     define: {
       __VUE_LIQUID_APP_ID__: `'${appid}'`,
+    },
+    optimizeDeps: {
+      include: ['components'],
     },
   });
 

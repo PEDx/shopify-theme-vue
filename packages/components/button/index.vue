@@ -13,3 +13,9 @@ const increment = () => {
   count.value++;
 };
 </script>
+
+<style>
+button {
+  font-size: 16px;
+}
+</style>

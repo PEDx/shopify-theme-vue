@@ -8,3 +8,8 @@
 <script setup>
 import { Button } from 'components';
 </script>
+
+
+<style>
+@import "tailwindcss";
+</style>

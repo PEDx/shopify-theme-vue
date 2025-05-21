@@ -27,8 +27,8 @@ export const dev = async (app_dir: string) => {
   const server = await createServer({
     root: app_dir,
     plugins: [
-      tailwindcss(),
       vue(),
+      tailwindcss(),
       {
         name: 'vue-liquid-dev',
         configureServer(server) {
