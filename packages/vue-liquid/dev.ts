@@ -4,7 +4,7 @@ import { OUTPUT_DIR } from './build.js';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 
-const dev_index_html = (app_id: string) => {
+const get_dev_index_html = (app_id: string) => {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -21,8 +21,8 @@ const dev_index_html = (app_id: string) => {
 };
 
 export const dev = async (app_dir: string) => {
-  const app_id = getAppId(false);
-  const index_html = dev_index_html(app_id);
+  const app_id = getAppId(true);
+  const index_html = get_dev_index_html(app_id);
 
   const server = await createServer({
     root: app_dir,

@@ -30,9 +30,6 @@ const get_build_config = (app_dir: string, appid: string) => {
     define: {
       __VUE_LIQUID_APP_ID__: `'${appid}'`,
     },
-    optimizeDeps: {
-      include: ['components'],
-    },
   });
 
   const server_side_build_config = mergeConfig<UserConfig, UserConfig>(common_build_config, {

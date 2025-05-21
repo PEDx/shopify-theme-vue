@@ -2,11 +2,7 @@
   "name": "shopify-theme-vue",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "type": "module",
-  "scripts": {
-    "build": "tsc ./packages/vue-liquid/index.ts"
-  },
   "keywords": [],
   "author": "",
   "license": "MIT",
