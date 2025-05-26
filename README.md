@@ -11,6 +11,15 @@ Vue to Shopify Liquid - A powerful development tool that integrates Vue.js into 
 
 - 🧩 Built-in Component Library: Comes with a customizable component library designed for quick adaptation to your project needs.
 
+### Roadmap
+- ♿ Semantic and Accessible Component Integration
+Reference or integrate community-driven component libraries to provide a collection of reusable UI and business components that follow semantic HTML and web accessibility (a11y) best practices.
+
+- 🔄 Vite Dev Integration for Shopify Theme Development
+Improve consistency between development and production environments by integrating Shopify theme development mode with Vite's dev server.
+
+- 🔗 Passing Shopify Theme Data and Views into Vue Templates
+Enable passing store data, editor config, and existing Liquid views (like snippets or sections) into Vue components — inspired by [Shopify Web Components](https://shopify.dev/docs/api/storefront-web-components), using special wrapper components to expose external content to Vue.
 
 ### Status
 🚧 This project is currently under active development.
