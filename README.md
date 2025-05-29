@@ -21,6 +21,38 @@ Improve consistency between development and production environments by integrati
 - 🔗 Passing Shopify Theme Data and Views into Vue Templates
 Enable passing store data, editor config, and existing Liquid views (like snippets or sections) into Vue components — inspired by [Storefront Web Components](https://shopify.dev/docs/api/storefront-web-components), using special wrapper components to expose external content to Vue.
 
+
+### Interface
+```bash
+# init project
+
+npx @shopify-theme-vue/toolkit init
+
+> pure vue project
+
+> vue project with shopify theme
+
+# run project
+
+cd your/project
+
+npm install
+
+npm run dev
+
+# add components
+
+npx @shopify-theme-vue/toolkit add button
+
+# build project
+
+npm run deploy
+
+# deploy project
+
+npm run deploy
+```
+
 ### Status
 🚧 This project is currently under active development.
 Stay tuned for installation instructions, usage examples, and full documentation.
