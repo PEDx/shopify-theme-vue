@@ -1,5 +1,5 @@
 {
-  "name": "vue-liquid",
+  "name": "toolkit",
   "version": "1.0.0",
   "description": "",
   "module": "./dist/index.js",

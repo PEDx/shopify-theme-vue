@@ -20,12 +20,16 @@ const get_dev_index_html = (app_id: string) => {
 `;
 };
 
-export const dev = async (app_dir: string) => {
+export interface IDevOptions {
+  entry: string;
+}
+
+export const dev = async ({ entry }: IDevOptions) => {
   const app_id = getAppId(true);
   const index_html = get_dev_index_html(app_id);
 
   const server = await createServer({
-    root: app_dir,
+    root: entry,
     plugins: [
       vue(),
       tailwindcss(),

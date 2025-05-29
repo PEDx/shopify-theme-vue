@@ -7,14 +7,12 @@
 </template>
 
 <script setup lang="ts">
-import { Button, Input } from 'components';
 import { ref } from 'vue';
+import { Button } from 'components';
 
 const input = ref('');
 
-const handleClick = () => {
-  console.log(input.value);
-};
+const handleClick = () => {};
 </script>
 
 <style>

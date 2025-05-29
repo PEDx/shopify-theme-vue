@@ -30,22 +30,18 @@ importers:
         specifier: ^3.5.13
         version: 3.5.13(typescript@5.8.3)
 
-  packages/components:
-    dependencies:
-      vue-liquid:
-        specifier: workspace:*
-        version: link:../vue-liquid
+  packages/components: {}
 
-  packages/theme-template:
+  packages/project:
     dependencies:
       components:
         specifier: workspace:*
         version: link:../components
-      vue-liquid:
+      toolkit:
         specifier: workspace:*
-        version: link:../vue-liquid
+        version: link:../toolkit
 
-  packages/vue-liquid:
+  packages/toolkit:
     dependencies:
       rollup-plugin-node-externals:
         specifier: ^8.0.0

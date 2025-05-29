@@ -1,4 +1,4 @@
-import { createApp } from 'vue-liquid/createApp';
+import { createApp } from 'toolkit/createApp';
 import App from './app.vue';
 
 export default createApp(App);

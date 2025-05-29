@@ -12,7 +12,7 @@
   "license": "MIT",
   "packageManager": "pnpm@10.7.0",
   "dependencies": {
-    "vue-liquid": "workspace:*",
-    "components": "workspace:*"
+    "components": "workspace:*",
+    "toolkit": "workspace:*"
   }
 }

@@ -14,8 +14,4 @@ const increment = () => {
 };
 </script>
 
-<style>
-button {
-  font-size: 16px;
-}
-</style>
+<style></style>

@@ -131,10 +131,15 @@ ${get_app_root_tag(appid, html)}
 <script src="{{ "${script_name}" | asset_url }}" type="text/javascript" defer fetchpriority="high"></script>`;
 };
 
-export async function build(app_dir: string, build_liquid: boolean = true) {
+export interface IBuildOptions {
+  entry: string;
+  liquid: boolean;
+}
+
+export async function build({ entry, liquid = true }: IBuildOptions) {
   const appid = getAppId();
 
-  const { server_side_build_config, client_side_build_config } = get_build_config(app_dir, appid);
+  const { server_side_build_config, client_side_build_config } = get_build_config(entry, appid);
 
   const server_side_build_result = (await viteBuild(server_side_build_config)) as Rollup.RollupOutput;
 
@@ -163,19 +168,19 @@ export async function build(app_dir: string, build_liquid: boolean = true) {
   const client_script = client_side_build_chunk_output?.code;
   const client_style = client_side_build_style_output?.source;
 
-  const output_dir = join(app_dir, OUTPUT_DIR);
+  const output_dir = join(entry, OUTPUT_DIR);
   if (!existsSync(output_dir)) {
     mkdirSync(output_dir, { recursive: true });
   }
 
-  const app_name = basename(app_dir);
+  const app_name = basename(entry);
   const banner = generate_build_banner();
   const build_banner = get_comment(banner);
   const liquid_comment = get_liquid_comment(banner);
 
   console.log(banner);
 
-  if (build_liquid) {
+  if (liquid) {
     const script_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.js`;
     const style_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.css`;
     const liquid_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.liquid`;
