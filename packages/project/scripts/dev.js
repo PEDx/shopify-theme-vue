@@ -1,3 +1,5 @@
 import { dev } from 'toolkit';
 
-dev('./src/sections/example');
+dev({
+  entry: './src/sections/example',
+});

@@ -14,7 +14,7 @@ const get_dev_index_html = (app_id: string) => {
   </head>
   <body>
     <div id="${app_id}"></div>
-    <script type="module" src="./${ENTRY_FILE_NAME}"></script>
+    <script type="module" src="/${ENTRY_FILE_NAME}"></script>
   </body>
 </html>
 `;

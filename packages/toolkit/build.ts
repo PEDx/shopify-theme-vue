@@ -18,7 +18,7 @@ export const LIQUID_ASSETS_PREFIX = 'vue';
 const get_build_config = (app_dir: string, appid: string) => {
   const common_build_config = defineConfig({
     mode: 'production',
-    plugins: [vue(), tailwindcss()],
+    plugins: [vue()],
     build: {
       cssCodeSplit: false,
       rollupOptions: {
@@ -26,7 +26,6 @@ const get_build_config = (app_dir: string, appid: string) => {
         external: ['vue'],
       },
     },
-
     define: {
       __VUE_LIQUID_APP_ID__: `'${appid}'`,
     },
@@ -37,6 +36,7 @@ const get_build_config = (app_dir: string, appid: string) => {
       ssr: join(app_dir, ENTRY_FILE_NAME),
       ssrEmitAssets: false,
       cssCodeSplit: true,
+      cssMinify: false,
       rollupOptions: {
         output: {
           format: 'cjs',
@@ -47,6 +47,7 @@ const get_build_config = (app_dir: string, appid: string) => {
   });
 
   const client_side_build_config = mergeConfig<UserConfig, UserConfig>(common_build_config, {
+    plugins: [tailwindcss()],
     build: {
       ssrManifest: true,
       rollupOptions: {
