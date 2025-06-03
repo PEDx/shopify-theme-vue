@@ -1,6 +1,6 @@
 import { createServer } from 'vite';
 import { getAppId } from './utils.js';
-import { OUTPUT_DIR } from './build.js';
+import { ENTRY_FILE_NAME, OUTPUT_DIR } from './build.js';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 
@@ -14,7 +14,7 @@ const get_dev_index_html = (app_id: string) => {
   </head>
   <body>
     <div id="${app_id}"></div>
-    <script type="module" src="./main.ts"></script>
+    <script type="module" src="./${ENTRY_FILE_NAME}"></script>
   </body>
 </html>
 `;

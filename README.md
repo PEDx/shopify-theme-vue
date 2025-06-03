@@ -40,10 +40,6 @@ npm install
 
 npm run dev
 
-# add components
-
-npx @shopify-theme-vue/toolkit add button
-
 # build project
 
 npm run deploy

@@ -13,5 +13,3 @@ const increment = () => {
   count.value++;
 };
 </script>
-
-<style></style>

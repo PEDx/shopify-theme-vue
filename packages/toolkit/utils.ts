@@ -9,8 +9,8 @@ export function randomString(e: number) {
 
 export function getAppId(isDev = false) {
   if (isDev) {
-    return 'app';
+    return 'vue-liquid-app-dev';
   }
 
-  return `app-${randomString(8)}`;
+  return `vue-liquid-app-${randomString(8)}`;
 }

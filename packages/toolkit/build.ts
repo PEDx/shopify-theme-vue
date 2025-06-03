@@ -55,6 +55,7 @@ const get_build_config = (app_dir: string, appid: string) => {
           globals: {
             vue: 'Vue',
           },
+          name: appid,
           entryFileNames: '[name].js',
         },
       },
