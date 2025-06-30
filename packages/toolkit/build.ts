@@ -9,6 +9,7 @@ import { createRequire } from 'module';
 import type { Module } from 'module';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { basename, extname, join } from 'path';
+import { compilerOptions } from './transform.js';
 
 export const ENTRY_FILE_NAME = 'main.ts';
 export const OUTPUT_DIR = 'dist';
@@ -18,7 +19,12 @@ export const LIQUID_ASSETS_PREFIX = 'vue';
 const get_build_config = (app_dir: string, appid: string) => {
   const common_build_config = defineConfig({
     mode: 'production',
-    plugins: [vue()],
+    plugins: [vue({
+        template: {
+          compilerOptions,
+        },
+      }),
+    ],
     build: {
       cssCodeSplit: false,
       rollupOptions: {

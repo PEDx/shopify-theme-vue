@@ -3,6 +3,7 @@ import { getAppId } from './utils.js';
 import { ENTRY_FILE_NAME, OUTPUT_DIR } from './build.js';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
+import { compilerOptions } from './transform.js';
 
 const get_dev_index_html = (app_id: string) => {
   return `<!doctype html>
@@ -31,7 +32,11 @@ export const dev = async ({ entry }: IDevOptions) => {
   const server = await createServer({
     root: entry,
     plugins: [
-      vue(),
+      vue({
+        template: {
+          compilerOptions,
+        },
+      }),
       tailwindcss(),
       {
         name: 'vue-liquid-dev',
