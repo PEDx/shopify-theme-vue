@@ -14,7 +14,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@vue/compiler-core": "^3.5.13",
+    "@vue/compiler-core": "^3.5.17",
     "rollup-plugin-node-externals": "^8.0.0"
   }
 }
