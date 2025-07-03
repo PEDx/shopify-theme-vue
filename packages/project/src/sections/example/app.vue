@@ -1,15 +1,15 @@
 <template>
   <div class="flex flex-col items-center justify-center h-screen">
-    <liquid class="text-2xl lg:text-4xl lg:font-bold" tag="h1" v-pre>{{ title }}</liquid>
+    <h1 class="text-2xl lg:text-4xl lg:font-bold" liquid="{{ section.settings.title | upcase }}"></h1>
 
     <input v-model="input" class="border border-gray-300 rounded-md p-2" />
     <button @click="handleClick" class="cursor-pointer bg-blue-500 text-white p-2 rounded-md">
       Click me {{ input }}
     </button>
 
-    <liquid class="text-2xl lg:text-4xl lg:font-bold" v-if="false" v-pre>
+    <liquid class="text-2xl lg:text-4xl lg:font-bold" v-pre>
       {% for block in section.blocks %}
-      <div class="diy-creativity__tab-content__item swiper-slide" v-if="false">
+      <div class="diy-creativity__tab-content__item swiper-slide">
         {{
               block.settings.video
               | video_tag:
