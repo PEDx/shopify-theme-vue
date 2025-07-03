@@ -10,6 +10,7 @@ import type { Module } from 'module';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { basename, extname, join } from 'path';
 import { compilerOptions } from './transform.js';
+import { upload } from './shopify';
 
 export const ENTRY_FILE_NAME = 'main.ts';
 export const OUTPUT_DIR = 'dist';
@@ -145,24 +146,12 @@ export interface IBuildOptions {
   liquid: boolean;
 }
 
-export async function build({ entry, liquid = true }: IBuildOptions) {
-  const appid = getAppId();
-
-  const { server_side_build_config, client_side_build_config } = get_build_config(entry, appid);
+export async function build_html({ entry, appid }: { entry: string; appid: string }) {
+  const { server_side_build_config } = get_build_config(entry, appid);
 
   const server_side_build_result = (await viteBuild(server_side_build_config)) as Rollup.RollupOutput;
 
-  const client_side_build_result = (await viteBuild(client_side_build_config)) as Rollup.RollupOutput;
-
-  const { renderToString }: typeof import('vue/server-renderer') = await import('vue/server-renderer');
-
   const server_side_build_chunk_output = server_side_build_result.output.find((output) => output.type === 'chunk');
-
-  const client_side_build_chunk_output = client_side_build_result.output.find((output) => output.type === 'chunk');
-
-  const client_side_build_style_output = client_side_build_result.output.find(
-    (output) => output.type === 'asset' && extname(output.fileName) === '.css',
-  ) as Rollup.OutputAsset;
 
   if (!server_side_build_chunk_output) return;
 
@@ -173,7 +162,34 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
 
   const app = script.runInThisContext({ displayErrors: true });
 
+  const { renderToString }: typeof import('vue/server-renderer') = await import('vue/server-renderer');
+
   const html = await renderToString(app);
+
+  return html;
+}
+
+const req_latency = async (async_fn: () => Promise<any>) => {
+  const start = Date.now();
+  await async_fn();
+  return Date.now() - start;
+};
+
+export async function build({ entry, liquid = true }: IBuildOptions) {
+  const appid = getAppId();
+
+  const { client_side_build_config } = get_build_config(entry, appid);
+
+  const client_side_build_result = (await viteBuild(client_side_build_config)) as Rollup.RollupOutput;
+
+  const client_side_build_chunk_output = client_side_build_result.output.find((output) => output.type === 'chunk');
+
+  const client_side_build_style_output = client_side_build_result.output.find(
+    (output) => output.type === 'asset' && extname(output.fileName) === '.css',
+  ) as Rollup.OutputAsset;
+
+  if (!client_side_build_chunk_output) return;
+
   const client_script = client_side_build_chunk_output?.code;
   const client_style = client_side_build_style_output?.source;
 
@@ -182,12 +198,12 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
     mkdirSync(output_dir, { recursive: true });
   }
 
+  const html = await build_html({ entry, appid });
+
   const app_name = basename(entry);
   const banner = generate_build_banner();
   const build_banner = get_comment(banner);
   const liquid_comment = get_liquid_comment(banner);
-
-  console.log(banner);
 
   if (liquid) {
     const script_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.js`;
@@ -212,6 +228,22 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
     style: client_style as string,
     appid,
   });
+
+  const start = Date.now();
+
+  const upload_result = await upload(final_html, {
+    theme: {
+      store: '',
+      target: '',
+      username: '',
+      password: '',
+    },
+    key: 'sections/dev.liquid',
+  });
+
+  console.log('upload latency:', Date.now() - start, 'ms');
+
+  console.log(upload_result);
 
   writeFileSync(join(output_dir, 'index.html'), final_html);
 }
