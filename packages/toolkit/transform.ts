@@ -1,60 +1,39 @@
-import type { AttributeNode, NodeTransform, RootNode, TemplateChildNode, TransformContext } from '@vue/compiler-core';
+import type { AttributeNode, NodeTransform } from '@vue/compiler-core';
 import { createSimpleExpression } from '@vue/compiler-core';
 import type { SFCTemplateCompileOptions } from '@vue/compiler-sfc';
-import { CompilerDeprecationTypes, NodeTypes } from '@vue/compiler-core';
+import { NodeTypes } from '@vue/compiler-core';
 
 const LIQUID_TAG_NAME = 'liquid';
-const DEFAULT_REPLACEMENT_TAG = 'div';
-const DEFAULT_REPLACEMENT_ATTRIBUTE = 'as';
+const TAG_ATTRIBUTE_NAME = 'tag';
+const DEFAULT_WRAP_TAG_NAME = 'div';
 
-const traverse = (
-  node: RootNode | TemplateChildNode,
-  context: TransformContext,
-  children: TemplateChildNode[],
-  index: number,
-) => {
-  if (node.type === NodeTypes.INTERPOLATION) {
-    const rawContent = node.loc.source;
-
-    const textNode = {
-      ...node,
-      type: NodeTypes.TEXT,
-      content: rawContent,
-      isStatic: true,
-      constType: 3,
-    };
-
-    children[index] = textNode as any;
-    return;
-  }
-  if (node.type === NodeTypes.ELEMENT && node.children) {
-    node.children.forEach((child, index) => traverse(child, context, node.children, index));
-  }
-};
-
-export const transformLiquidTag: NodeTransform = (node, context) => {
+export const transformLiquidTag: NodeTransform = (node) => {
   if (node.type === NodeTypes.ELEMENT && node.tag === LIQUID_TAG_NAME) {
-    // console.log('liquid tag', JSON.stringify(node, null, 1));
-    node.tag = DEFAULT_REPLACEMENT_TAG;
+    const rawContent = node.children.map((child) => child.loc.source).join('');
+
+    node.tag = DEFAULT_WRAP_TAG_NAME;
+
     node.props.forEach((prop: AttributeNode) => {
-      if (prop.name === DEFAULT_REPLACEMENT_ATTRIBUTE) {
-        node.props.splice(node.props.indexOf(prop), 1);
+      if (prop.name === TAG_ATTRIBUTE_NAME) {
         node.tag = prop.value.content;
+        node.props.splice(node.props.indexOf(prop), 1);
       }
     });
 
-    // const loc = node.loc;
-    // const innerHTML = createSimpleExpression(`innerHTML`, true, loc);
-    // console.log('innerHTML', innerHTML);
-
-    // context.replaceNode(innerHTML as any);
-
-    // node.children.push(innerHTML as any);
-    traverse(node, context, node.children, 0);
+    node.children = [];
+    node.props.push({
+      type: NodeTypes.DIRECTIVE,
+      name: 'html',
+      rawName: `v-html`,
+      loc: node.loc,
+      exp: createSimpleExpression(rawContent, true, node.loc),
+      arg: undefined,
+      modifiers: [],
+    });
   }
 };
 
 export const compilerOptions: SFCTemplateCompileOptions['compilerOptions'] = {
-  isCustomElement: (tag: string) => tag === LIQUID_TAG_NAME,
   nodeTransforms: [transformLiquidTag],
+  isCustomElement: (tag) => tag === LIQUID_TAG_NAME,
 };

@@ -19,7 +19,8 @@ export const LIQUID_ASSETS_PREFIX = 'vue';
 const get_build_config = (app_dir: string, appid: string) => {
   const common_build_config = defineConfig({
     mode: 'production',
-    plugins: [vue({
+    plugins: [
+      vue({
         template: {
           compilerOptions,
         },

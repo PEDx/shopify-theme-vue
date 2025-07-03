@@ -22,6 +22,40 @@ Improve consistency between development and production environments by integrati
 Enable passing store data, editor config, and existing Liquid views (like snippets or sections) into Vue components — inspired by [Storefront Web Components](https://shopify.dev/docs/api/storefront-web-components), using special wrapper components to expose external content to Vue.
 
 
+### Liquid And Vue
+The `template` in `Vue SFC` goes through SSG and ultimately becomes a `.liquid` file.
+Therefore, when we need to add Section Setting configurations or Shopify liquid data (such as products) in Vue templates,
+we can use the `<liquid v-pre></liquid>` tag to wrap liquid syntax in Vue. The Vue compiler will not escape any code inside it.
+
+**However, you cannot use any Vue syntax within this tag.**
+
+**Note: Adding `v-pre` skips parsing of liquid code during the parse process and ensures Vue's VSCode plugins work properly**
+
+```html
+<template>
+  <h1>Example</h1>
+
+  <liquid v-pre tag="div">
+    {% for block in section.blocks %}
+    <div class="text-2xl lg:text-4xl lg:font-bold">
+      {{ block.settings.title | upcase | append: 'test' }}
+    </div>
+    {% endfor %}
+  </liquid>
+
+  <div>
+    {{ vue_data.title }}
+  </div>
+</template>
+
+<script setup lang="ts">
+const vue_data = {
+  title: 'Vue Data Example',
+};
+</script>
+
+```
+
 ### Interface
 ```bash
 # init project
