@@ -183,8 +183,6 @@ export async function build_html({ entry, appid }: { entry: string; appid: strin
 
   const html = await renderToString(app);
 
-  console.log('html =>', global.module);
-
   return html;
 }
 
