@@ -1,35 +1,29 @@
 import { createServer } from 'vite';
 import { getAppId } from './utils.js';
-import { ENTRY_FILE_NAME, OUTPUT_DIR, build_html } from './build.js';
+import { ENTRY_FILE_NAME, OUTPUT_DIR, build_html, get_app_root_tag } from './build.js';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import { compilerOptions } from './transform.js';
+import { uploadShopifyFiles } from './shopify.js';
 
-const get_dev_index_html = (app_id: string) => {
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Vue + TS</title>
-  </head>
-  <body>
-    <div id="${app_id}"></div>
-    <script type="module" src="/${ENTRY_FILE_NAME}"></script>
-  </body>
-</html>
+const get_dev_liquid = (app_id: string, liquid: string) => {
+  return `${get_app_root_tag(app_id, liquid)}
+    <script type="module" src="http://localhost:3000/${ENTRY_FILE_NAME}"></script>
 `;
 };
-
 export interface IDevOptions {
   entry: string;
 }
 
 export const dev = async ({ entry }: IDevOptions) => {
   const app_id = getAppId(true);
-  const index_html = get_dev_index_html(app_id);
+
+  let liquid = await build_html({ entry, appid: app_id });
+
+  liquid = get_dev_liquid(app_id, liquid);
 
   const server = await createServer({
+    mode: 'production',
     root: entry,
     plugins: [
       vue({
@@ -44,11 +38,45 @@ export const dev = async ({ entry }: IDevOptions) => {
           server.middlewares.use(async (req, res, next) => {
             const url = req.url;
             if (url === '/') {
-              res.end(index_html);
+              res.end(liquid);
               return;
             }
             next();
           });
+        },
+        async watchChange() {
+          const start = Date.now();
+
+          const upload_result = await uploadShopifyFiles({
+            theme: {
+              store: '',
+              id: 0,
+            },
+            files: [
+              {
+                key: 'sections/dev.liquid',
+                content:
+                  liquid +
+                  `{% schema %}
+  {
+    "name": "dev section",
+    "settings": [],
+    "blocks": [],
+    "presets": [
+      {
+        "name": "dev section",
+        "blocks": []
+      }
+    ]
+  }
+{% endschema %}`,
+              },
+            ],
+          });
+
+          console.log('upload latency:', Date.now() - start, 'ms');
+
+          console.log(upload_result);
         },
       },
     ],

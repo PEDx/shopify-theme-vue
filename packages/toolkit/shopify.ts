@@ -1,3 +1,6 @@
+import { ensureAuthenticatedThemes } from '@shopify/cli-kit/node/session';
+import { bulkUploadThemeAssets } from '@shopify/cli-kit/node/themes/api';
+
 type LiteralUnion<T extends U, U = string> = T | (U & Record<never, never>);
 
 export type FileKeys = LiteralUnion<
@@ -13,10 +16,16 @@ export type FileKeys = LiteralUnion<
 >;
 
 export interface Theme {
-  username: string;
-  password: string;
   store: string;
-  target: string;
+  id: number;
+}
+
+interface IUploadOptions {
+  theme: Theme;
+  files: {
+    key: FileKeys;
+    content: string;
+  }[];
 }
 
 /**
@@ -24,40 +33,22 @@ export interface Theme {
  *
  * Uploads a single asset
  */
-export async function upload(asset: string, config: { theme: Theme; key: FileKeys }): Promise<boolean> {
-  const url = `https://admin.shopify.com/store/${config.theme.store}/themes/${config.theme.target}/assets.json`;
-  console.log(url);
-  const request = {
-    method: 'put',
-    url,
-    data: {
-      asset: {
-        key: config.key,
-        value: asset,
-      },
-    },
-  };
+export async function uploadShopifyFiles({ theme, files }: IUploadOptions): Promise<boolean> {
+  console.log(theme);
 
-  return fetch(request.url, {
-    method: request.method,
-    body: JSON.stringify(request.data),
-    headers: {
-      Authorization:
-        'Basic ' +
-        btoa(
-          (config.theme.username || '') +
-            ':' +
-            (config.theme.password ? unescape(encodeURIComponent(config.theme.password)) : ''),
-        ),
-    },
-  })
-    .then((res) => {
-      console.log(res);
-      return true;
-    })
-    .catch((e) => {
-      console.error(config.key);
-      console.error(e);
-      return false;
-    });
+  let start = Date.now();
+
+  const adminSession = await ensureAuthenticatedThemes(theme.store, '');
+
+  console.log('ensureAuthenticatedThemes latency:', Date.now() - start, 'ms');
+
+  start = Date.now();
+
+  const result = await bulkUploadThemeAssets(theme.id, files, adminSession);
+
+  console.log('bulkUploadThemeAssets latency:', Date.now() - start, 'ms');
+
+  console.log(result);
+
+  return result.length > 0;
 }

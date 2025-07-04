@@ -10,7 +10,7 @@ import type { Module } from 'module';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { basename, extname, join } from 'path';
 import { compilerOptions } from './transform.js';
-import { upload } from './shopify';
+import { renderToString } from 'vue/server-renderer';
 
 export const ENTRY_FILE_NAME = 'main.ts';
 export const OUTPUT_DIR = 'dist';
@@ -95,7 +95,7 @@ const generate_build_banner = () => {
   return `*  build date ${new Date().toLocaleString()}`;
 };
 
-const get_app_root_tag = (appid: string, html: string) => {
+export const get_app_root_tag = (appid: string, html: string) => {
   return `<div id="${appid}" data-server-rendered="true">${html}</div>`;
 };
 
@@ -122,6 +122,25 @@ const generate_html = ({
     <script type="text/javascript">${script}</script>
   </body>
 </html>
+`;
+};
+
+const generate_dev_liquid = ({
+  html,
+  script,
+  style,
+  appid,
+}: {
+  html: string;
+  script?: string;
+  style?: string;
+  appid: string;
+}) => {
+  return `
+    <style>${style}</style>
+    ${get_app_root_tag(appid, html)}
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type="text/javascript">${script}</script>
 `;
 };
 
@@ -162,18 +181,12 @@ export async function build_html({ entry, appid }: { entry: string; appid: strin
 
   const app = script.runInThisContext({ displayErrors: true });
 
-  const { renderToString }: typeof import('vue/server-renderer') = await import('vue/server-renderer');
-
   const html = await renderToString(app);
+
+  console.log('html =>', global.module);
 
   return html;
 }
-
-const req_latency = async (async_fn: () => Promise<any>) => {
-  const start = Date.now();
-  await async_fn();
-  return Date.now() - start;
-};
 
 export async function build({ entry, liquid = true }: IBuildOptions) {
   const appid = getAppId();
@@ -222,28 +235,12 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
     return;
   }
 
-  const final_html = generate_html({
+  const final_html = generate_dev_liquid({
     html,
     script: client_script,
     style: client_style as string,
     appid,
   });
-
-  const start = Date.now();
-
-  const upload_result = await upload(final_html, {
-    theme: {
-      store: '',
-      target: '',
-      username: '',
-      password: '',
-    },
-    key: 'sections/dev.liquid',
-  });
-
-  console.log('upload latency:', Date.now() - start, 'ms');
-
-  console.log(upload_result);
 
   writeFileSync(join(output_dir, 'index.html'), final_html);
 }
