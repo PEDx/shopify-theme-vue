@@ -1,4 +1,4 @@
-export function randomString(e: number) {
+export function random_string(e: number) {
   e = e || 32;
   var t = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678',
     a = t.length,
@@ -7,10 +7,72 @@ export function randomString(e: number) {
   return n;
 }
 
-export function getAppId(isDev = false) {
+export function get_app_id(isDev = false) {
   if (isDev) {
     return 'vue-liquid-app-dev';
   }
 
-  return `vue-liquid-app-${randomString(8)}`;
+  return `vue-liquid-app-${random_string(8)}`;
 }
+
+export const get_comment = (comment: string) => {
+  return `/**
+${comment}
+*/\n`;
+};
+
+export const get_liquid_comment = (comment: string) => {
+  return `{% comment %}
+${comment}
+{% endcomment %}\n`;
+};
+
+export const generate_build_banner = () => {
+  return `*  build date ${new Date().toLocaleString()}`;
+};
+
+export const get_app_root_tag = (appid: string, html: string) => {
+  return `<div id="${appid}" data-server-rendered="true">${html}</div>`;
+};
+
+
+export const generate_dev_liquid = ({
+  html,
+  script,
+  style,
+  appid,
+}: {
+  html: string;
+  script?: string;
+  style?: string;
+  appid: string;
+}) => {
+  return `
+    <style>${style}</style>
+    ${get_app_root_tag(appid, html)}
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type="text/javascript">${script}</script>
+`;
+};
+
+export const generate_liquid = ({
+  html,
+  appid,
+  script_name,
+  style_name,
+  schema,
+}: {
+  html: string;
+  appid: string;
+  script_name: string;
+  style_name: string;
+  schema?: string;
+}) => {
+  let liquid = `<link href="{{ "${style_name}" | asset_url }}" rel="stylesheet" type="text/css" >
+${get_app_root_tag(appid, html)}
+<script src="{{ "${script_name}" | asset_url }}" type="text/javascript" defer fetchpriority="high"></script>`;
+
+  if (schema) liquid += `{% schema %} ${schema} {% endschema %}`;
+
+  return liquid;
+};

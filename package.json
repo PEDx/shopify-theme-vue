@@ -11,12 +11,12 @@
     "packages/*"
   ],
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.6",
-    "@types/node": "^22.15.18",
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/node": "^22.16.3",
     "@vitejs/plugin-vue": "^6.0.0",
-    "tailwindcss": "^4.1.6",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3",
-    "vite": "npm:rolldown-vite@latest",
+    "vite": "npm:rolldown-vite@^7.0.9",
     "vue": "^3.5.17"
   }
 }

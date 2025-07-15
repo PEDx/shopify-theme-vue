@@ -1,6 +1,6 @@
 import { createServer } from 'vite';
-import { getAppId } from './utils.js';
-import { ENTRY_FILE_NAME, OUTPUT_DIR, build_html, get_app_root_tag } from './build.js';
+import { get_app_id, get_app_root_tag } from './utils.js';
+import { ENTRY_FILE_NAME, OUTPUT_DIR, build_liquid_raw } from './build.js';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import { compilerOptions } from './transform.js';
@@ -16,14 +16,13 @@ export interface IDevOptions {
 }
 
 export const dev = async ({ entry }: IDevOptions) => {
-  const app_id = getAppId(true);
+  const app_id = get_app_id(true);
 
-  let liquid = await build_html({ entry, appid: app_id });
+  const { html, schema } = await build_liquid_raw({ entry, appid: app_id });
 
-  liquid = get_dev_liquid(app_id, liquid);
+  const liquid = get_dev_liquid(app_id, html);
 
   const server = await createServer({
-    mode: 'production',
     root: entry,
     plugins: [
       vue({
@@ -58,18 +57,8 @@ export const dev = async ({ entry }: IDevOptions) => {
                 content:
                   liquid +
                   `{% schema %}
-  {
-    "name": "dev section",
-    "settings": [],
-    "blocks": [],
-    "presets": [
-      {
-        "name": "dev section",
-        "blocks": []
-      }
-    ]
-  }
-{% endschema %}`,
+                   ${JSON.stringify(schema)}
+                 {% endschema %}`,
               },
             ],
           });

@@ -14,8 +14,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@shopify/cli-kit": "^3.82.0",
+    "@shopify/cli-kit": "^3.82.1",
     "@vue/compiler-core": "^3.5.17",
-    "rollup-plugin-node-externals": "^8.0.0"
+    "rollup-plugin-node-externals": "^8.0.1"
   }
 }

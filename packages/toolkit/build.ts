@@ -2,20 +2,26 @@ import { build as viteBuild, defineConfig, mergeConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import type { UserConfig } from 'vite';
-import { getAppId } from './utils';
+import {
+  get_app_id,
+  get_comment,
+  get_liquid_comment,
+  generate_build_banner,
+  generate_liquid,
+  generate_dev_liquid,
+} from './utils';
 import type { Rollup } from 'vite';
 import { Script } from 'vm';
 import { createRequire } from 'module';
-import type { Module } from 'module';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { basename, extname, join } from 'path';
 import { compilerOptions } from './transform.js';
 import { renderToString } from 'vue/server-renderer';
 
-export const ENTRY_FILE_NAME = 'main.ts';
+export const ENTRY_FILE_NAME = 'index.ts';
 export const OUTPUT_DIR = 'dist';
 
-export const LIQUID_ASSETS_PREFIX = 'vue';
+export const VUE_APP_FILENAME_PREFIX = 'vue';
 
 const get_build_config = (app_dir: string, appid: string) => {
   const common_build_config = defineConfig({
@@ -47,7 +53,8 @@ const get_build_config = (app_dir: string, appid: string) => {
       cssMinify: false,
       rollupOptions: {
         output: {
-          format: 'cjs',
+          format: 'commonjs',
+          exports: 'named',
         },
       },
       write: false,
@@ -79,93 +86,12 @@ const get_build_config = (app_dir: string, appid: string) => {
   };
 };
 
-const get_comment = (comment: string) => {
-  return `/**
-${comment}
-*/\n`;
-};
-
-const get_liquid_comment = (comment: string) => {
-  return `{% comment %}
-${comment}
-{% endcomment %}\n`;
-};
-
-const generate_build_banner = () => {
-  return `*  build date ${new Date().toLocaleString()}`;
-};
-
-export const get_app_root_tag = (appid: string, html: string) => {
-  return `<div id="${appid}" data-server-rendered="true">${html}</div>`;
-};
-
-const generate_html = ({
-  html,
-  script,
-  style,
-  appid,
-}: {
-  html: string;
-  script?: string;
-  style?: string;
-  appid: string;
-}) => {
-  return `<!DOCTYPE html>
-<html>
-  <head>
-    <title>vue liquid app</title>
-    <style>${style}</style>
-  </head>
-  <body>
-    ${get_app_root_tag(appid, html)}
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script type="text/javascript">${script}</script>
-  </body>
-</html>
-`;
-};
-
-const generate_dev_liquid = ({
-  html,
-  script,
-  style,
-  appid,
-}: {
-  html: string;
-  script?: string;
-  style?: string;
-  appid: string;
-}) => {
-  return `
-    <style>${style}</style>
-    ${get_app_root_tag(appid, html)}
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script type="text/javascript">${script}</script>
-`;
-};
-
-const generate_liquid = ({
-  html,
-  appid,
-  script_name,
-  style_name,
-}: {
-  html: string;
-  appid: string;
-  script_name: string;
-  style_name: string;
-}) => {
-  return `<link href="{{ "${style_name}" | asset_url }}" rel="stylesheet" type="text/css" >
-${get_app_root_tag(appid, html)}
-<script src="{{ "${script_name}" | asset_url }}" type="text/javascript" defer fetchpriority="high"></script>`;
-};
-
 export interface IBuildOptions {
   entry: string;
   liquid: boolean;
 }
 
-export async function build_html({ entry, appid }: { entry: string; appid: string }) {
+export async function build_liquid_raw({ entry, appid }: { entry: string; appid: string }) {
   const { server_side_build_config } = get_build_config(entry, appid);
 
   const server_side_build_result = (await viteBuild(server_side_build_config)) as Rollup.RollupOutput;
@@ -174,20 +100,21 @@ export async function build_html({ entry, appid }: { entry: string; appid: strin
 
   if (!server_side_build_chunk_output) return;
 
-  global.require = createRequire(import.meta.url);
-  global.module = {} as Module;
+  global.require = createRequire(import.meta.url); // commonjs import for server side
 
-  const script = new Script(server_side_build_chunk_output.code);
+  global.exports = {}; // custom exports for server side
+
+  const script = new Script(`(() => {${server_side_build_chunk_output.code}return exports;})()`);
 
   const app = script.runInThisContext({ displayErrors: true });
 
-  const html = await renderToString(app);
+  const html = await renderToString(app.default);
 
-  return html;
+  return { html, schema: app.schema };
 }
 
 export async function build({ entry, liquid = true }: IBuildOptions) {
-  const appid = getAppId();
+  const appid = get_app_id();
 
   const { client_side_build_config } = get_build_config(entry, appid);
 
@@ -209,7 +136,7 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
     mkdirSync(output_dir, { recursive: true });
   }
 
-  const html = await build_html({ entry, appid });
+  const { html, schema } = await build_liquid_raw({ entry, appid });
 
   const app_name = basename(entry);
   const banner = generate_build_banner();
@@ -217,15 +144,15 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
   const liquid_comment = get_liquid_comment(banner);
 
   if (liquid) {
-    const script_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.js`;
-    const style_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.css`;
-    const liquid_name = `${LIQUID_ASSETS_PREFIX}-${app_name}.liquid`;
+    const script_name = `${VUE_APP_FILENAME_PREFIX}-${app_name}.js`;
+    const style_name = `${VUE_APP_FILENAME_PREFIX}-${app_name}.css`;
+    const liquid_name = `${VUE_APP_FILENAME_PREFIX}-${app_name}.liquid`;
 
     const script_file_name = join(output_dir, script_name);
     const style_file_name = join(output_dir, style_name);
     const liquid_file_name = join(output_dir, liquid_name);
 
-    const liquid_content = generate_liquid({ html, appid, script_name, style_name });
+    const liquid_content = generate_liquid({ html, appid, script_name, style_name, schema });
 
     writeFileSync(script_file_name, build_banner.concat(client_script as string));
     writeFileSync(style_file_name, build_banner.concat(client_style as string));
