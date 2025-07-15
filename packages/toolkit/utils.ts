@@ -9,10 +9,10 @@ export function random_string(e: number) {
 
 export function get_app_id(isDev = false) {
   if (isDev) {
-    return 'vue-liquid-app-dev';
+    return `vue-liquid-app-dev-{{ section.id }}`;
   }
 
-  return `vue-liquid-app-${random_string(8)}`;
+  return `vue-liquid-app-${random_string(10)}`;
 }
 
 export const get_comment = (comment: string) => {
@@ -35,8 +35,7 @@ export const get_app_root_tag = (appid: string, html: string) => {
   return `<div id="${appid}" data-server-rendered="true">${html}</div>`;
 };
 
-
-export const generate_dev_liquid = ({
+export const generate_code_preview_liquid = ({
   html,
   script,
   style,
@@ -50,12 +49,11 @@ export const generate_dev_liquid = ({
   return `
     <style>${style}</style>
     ${get_app_root_tag(appid, html)}
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script type="text/javascript">${script}</script>
 `;
 };
 
-export const generate_liquid = ({
+export const generate_release_liquid = ({
   html,
   appid,
   script_name,
@@ -73,6 +71,25 @@ ${get_app_root_tag(appid, html)}
 <script src="{{ "${script_name}" | asset_url }}" type="text/javascript" defer fetchpriority="high"></script>`;
 
   if (schema) liquid += `{% schema %} ${schema} {% endschema %}`;
+
+  return liquid;
+};
+
+export const generate_dev_liquid = ({
+  html,
+  appid,
+  script_url,
+  schema,
+}: {
+  html: string;
+  appid: string;
+  script_url: string;
+  schema?: string;
+}) => {
+  let liquid = `${get_app_root_tag(appid, html)}
+<script type="module" src="${script_url}"></script>`;
+
+  if (schema) liquid += `\n{% schema %} ${schema} {% endschema %}`;
 
   return liquid;
 };

@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-const input = ref(1);
+const input = ref(3);
 
 const handleClick = () => {
   input.value += 1;

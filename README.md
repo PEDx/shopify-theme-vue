@@ -69,9 +69,9 @@ properly**
 
 npx @shopify-theme-vue/toolkit init
 
-> pure vue project
+1) pure vue project
 
-> vue project with shopify theme
+2) vue project within shopify theme project
 
 # run project
 
@@ -83,7 +83,7 @@ npm run dev
 
 # build project
 
-npm run deploy
+npm run build
 
 # deploy project
 

@@ -1,5 +1,6 @@
 import type { Component } from 'vue';
 import { createSSRApp } from 'vue';
+import './themeHRM.ts';
 
 export function createApp(rootComponent: Component, rootProps?: Record<string, unknown> | null) {
   const isSSR = import.meta.env.SSR;

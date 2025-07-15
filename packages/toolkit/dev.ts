@@ -1,26 +1,47 @@
 import { createServer } from 'vite';
-import { get_app_id, get_app_root_tag } from './utils.js';
+import { get_app_id, generate_dev_liquid } from './utils.js';
 import { ENTRY_FILE_NAME, OUTPUT_DIR, build_liquid_raw } from './build.js';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import { compilerOptions } from './transform.js';
-import { uploadShopifyFiles } from './shopify.js';
+import { uploadShopifyFiles, type IUploadOptions } from './shopify.js';
 
-const get_dev_liquid = (app_id: string, liquid: string) => {
-  return `${get_app_root_tag(app_id, liquid)}
-    <script type="module" src="http://localhost:3000/${ENTRY_FILE_NAME}"></script>
-`;
-};
 export interface IDevOptions {
   entry: string;
+  theme: {
+    id: string;
+    store: string;
+  };
 }
 
-export const dev = async ({ entry }: IDevOptions) => {
-  const app_id = get_app_id(true);
+const DEV_SERVER_PORT = 3000;
 
-  const { html, schema } = await build_liquid_raw({ entry, appid: app_id });
+export const dev = async ({ entry, theme }: IDevOptions) => {
+  const appid = get_app_id(true);
 
-  const liquid = get_dev_liquid(app_id, html);
+  const getLiquid = async () => {
+    const { html, schema } = await build_liquid_raw({ entry, appid });
+
+    const liquid = generate_dev_liquid({
+      html,
+      schema,
+      appid,
+      script_url: `http://localhost:${DEV_SERVER_PORT}/${ENTRY_FILE_NAME}`,
+    });
+
+    return liquid;
+  };
+
+  const syncFilesToShopify = async (files: IUploadOptions['files']) => {
+    const start = performance.now();
+
+    await uploadShopifyFiles({
+      theme: theme,
+      files,
+    });
+
+    console.log('upload latency:', performance.now() - start, 'ms');
+  };
 
   const server = await createServer({
     root: entry,
@@ -35,42 +56,33 @@ export const dev = async ({ entry }: IDevOptions) => {
         name: 'vue-liquid-dev',
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
-            const url = req.url;
-            if (url === '/') {
-              res.end(liquid);
-              return;
-            }
-            next();
+            if (req.url !== '/') return next();
+            res.end(await getLiquid());
           });
         },
         async watchChange() {
-          const start = Date.now();
+          const start = performance.now();
 
-          const upload_result = await uploadShopifyFiles({
-            theme: {
-              store: '',
-              id: 0,
-            },
-            files: [
-              {
-                key: 'sections/dev.liquid',
-                content:
-                  liquid +
-                  `{% schema %}
-                   ${JSON.stringify(schema)}
-                 {% endschema %}`,
-              },
-            ],
+          const liquid = await getLiquid();
+
+          console.log('getLiquid latency:', performance.now() - start, 'ms');
+
+          syncFilesToShopify([
+            { key: 'sections/dev.liquid', value: liquid },
+          ]);
+        },
+        handleHotUpdate({ server }) {
+          server.ws.send({
+            type: 'custom',
+            event: 'shopify:section:load',
+            data: {},
           });
-
-          console.log('upload latency:', Date.now() - start, 'ms');
-
-          console.log(upload_result);
+          return [];
         },
       },
     ],
     server: {
-      port: 3000,
+      port: DEV_SERVER_PORT,
       cors: true,
       watch: {
         ignored: ['node_modules', OUTPUT_DIR],
@@ -78,7 +90,7 @@ export const dev = async ({ entry }: IDevOptions) => {
       open: false,
     },
     define: {
-      __VUE_LIQUID_APP_ID__: `'${app_id}'`,
+      __VUE_LIQUID_APP_ID__: `'${appid}'`,
     },
   });
 

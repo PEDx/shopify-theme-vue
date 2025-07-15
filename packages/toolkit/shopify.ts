@@ -17,14 +17,14 @@ export type FileKeys = LiteralUnion<
 
 export interface Theme {
   store: string;
-  id: number;
+  id: string;
 }
 
-interface IUploadOptions {
+export interface IUploadOptions {
   theme: Theme;
   files: {
     key: FileKeys;
-    content: string;
+    value: string;
   }[];
 }
 
@@ -36,15 +36,15 @@ interface IUploadOptions {
 export async function uploadShopifyFiles({ theme, files }: IUploadOptions): Promise<boolean> {
   console.log(theme);
 
-  let start = Date.now();
+  let start = performance.now();
 
   const adminSession = await ensureAuthenticatedThemes(theme.store, '');
 
-  console.log('ensureAuthenticatedThemes latency:', Date.now() - start, 'ms');
+  console.log('ensureAuthenticatedThemes latency:', performance.now() - start, 'ms');
 
-  start = Date.now();
+  start = performance.now();
 
-  const result = await bulkUploadThemeAssets(theme.id, files, adminSession);
+  const result = await bulkUploadThemeAssets(Number(theme.id), files, adminSession);
 
   console.log('bulkUploadThemeAssets latency:', Date.now() - start, 'ms');
 

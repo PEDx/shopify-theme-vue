@@ -7,8 +7,8 @@ import {
   get_comment,
   get_liquid_comment,
   generate_build_banner,
-  generate_liquid,
-  generate_dev_liquid,
+  generate_release_liquid,
+  generate_code_preview_liquid,
 } from './utils';
 import type { Rollup } from 'vite';
 import { Script } from 'vm';
@@ -17,6 +17,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { basename, extname, join } from 'path';
 import { compilerOptions } from './transform.js';
 import { renderToString } from 'vue/server-renderer';
+import type { App } from 'vue';
 
 export const ENTRY_FILE_NAME = 'index.ts';
 export const OUTPUT_DIR = 'dist';
@@ -89,6 +90,7 @@ const get_build_config = (app_dir: string, appid: string) => {
 export interface IBuildOptions {
   entry: string;
   liquid: boolean;
+  output?: string;
 }
 
 export async function build_liquid_raw({ entry, appid }: { entry: string; appid: string }) {
@@ -106,11 +108,14 @@ export async function build_liquid_raw({ entry, appid }: { entry: string; appid:
 
   const script = new Script(`(() => {${server_side_build_chunk_output.code}return exports;})()`);
 
-  const app = script.runInThisContext({ displayErrors: true });
+  const app: {
+    default: App;
+    schema: Record<string, any>;
+  } = script.runInThisContext({ displayErrors: true });
 
   const html = await renderToString(app.default);
 
-  return { html, schema: app.schema };
+  return { html, schema: JSON.stringify(app.schema) };
 }
 
 export async function build({ entry, liquid = true }: IBuildOptions) {
@@ -152,7 +157,7 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
     const style_file_name = join(output_dir, style_name);
     const liquid_file_name = join(output_dir, liquid_name);
 
-    const liquid_content = generate_liquid({ html, appid, script_name, style_name, schema });
+    const liquid_content = generate_release_liquid({ html, appid, script_name, style_name, schema });
 
     writeFileSync(script_file_name, build_banner.concat(client_script as string));
     writeFileSync(style_file_name, build_banner.concat(client_style as string));
@@ -160,7 +165,7 @@ export async function build({ entry, liquid = true }: IBuildOptions) {
     return;
   }
 
-  const final_html = generate_dev_liquid({
+  const final_html = generate_code_preview_liquid({
     html,
     script: client_script,
     style: client_style as string,
