@@ -1,16 +1,23 @@
 import { createApp } from 'toolkit/createApp';
+import { defineSectionSchema } from 'toolkit/defineSectionSchema';
 import App from './app.vue';
 
-export default createApp(App);
-
-export const schema = {
+export const schema = defineSectionSchema({
   name: 'dev section',
-  settings: [],
+  settings: [
+    {
+      type: 'text',
+      id: 'text',
+      label: 'Text',
+      default: 'Hello World',
+    },
+  ],
   blocks: [],
   presets: [
     {
       name: 'dev section',
-      blocks: [],
     },
   ],
-};
+});
+
+export default createApp(App);
