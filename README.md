@@ -16,14 +16,6 @@ with server-side rendering and optimal performance.
 - Built-in Component Library: Comes with a customizable component library designed for quick adaptation to your project
   needs.
 
-### Roadmap
-
-- ♿ Semantic and Accessible Component Integration Reference or integrate community-driven component libraries to
-  provide a collection of reusable UI and business components that follow semantic HTML and web accessibility (a11y)
-  best practices.
-
-- 🔄 Vite Dev Integration for Shopify Theme Development Improve consistency between development and production
-  environments by integrating Shopify theme development mode with Vite's dev server.
 
 ### Sections
 
